@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2020 Architekti - Koncept V3</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'arch-yellow': '#FAF08F', // RGB 250, 240, 143
+                        'arch-black': '#000000',
+                        'arch-white': '#FFFFFF',
+                    },
+                    fontFamily: {
+                        // Antarctican jako primární, Barlow Condensed jako fallback
+                        'sans': ['Antarctican', 'Barlow Condensed', 'sans-serif'], 
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts - Fallback -->
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- GSAP pro animace -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* --- INTEGRACE VLASTNÍCH FONTŮ ---
+           Pokud budete mít soubory fontů (např. ve složce /fonts), 
+           odkomentujte tento blok a upravte cesty (url).
+        */
+        /*
+        @font-face {
+            font-family: 'Antarctican';
+            src: url('fonts/Antarctican-Regular.woff2') format('woff2'),
+                 url('fonts/Antarctican-Regular.woff') format('woff');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Antarctican';
+            src: url('fonts/Antarctican-Bold.woff2') format('woff2'),
+                 url('fonts/Antarctican-Bold.woff') format('woff');
+            font-weight: 700;
+            font-style: normal;
+        }
+        */
+
+        body {
+            font-family: 'Antarctican', 'Barlow Condensed', sans-serif;
+            overflow-x: hidden;
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        .horizontal-container {
+            display: flex;
+            flex-wrap: nowrap;
+            height: 100vh;
+            /* 8 sekcí * 100vw */
+            width: 800%; 
+        }
+
+        .panel {
+            width: 100vw;
+            height: 100vh;
+            flex-shrink: 0;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            /* DŮLEŽITÉ: Padding nahoře, aby obsah nelezl pod žlutou lištu */
+            padding-top: 80px; 
+        }
+
+        /* Slideshow na úvodní stránce */
+        .hero-slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            filter: brightness(0.6);
+        }
+        .hero-slide:first-child {
+            opacity: 1;
+        }
+
+        /* Standardní pozadí pro ostatní sekce */
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.4) grayscale(10%);
+            transition: transform 1s ease-out;
+        }
+
+        .panel:hover .bg-image {
+            transform: scale(1.03);
+            filter: brightness(0.5) grayscale(0%);
+        }
+
+        /* Instagram Grid */
+        .insta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .insta-item {
+            aspect-ratio: 1;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.7;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .insta-item:hover {
+            opacity: 1;
+            border-color: #FAF08F;
+        }
+
+        .project-number {
+            -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+            color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+      NAVIGACE - ŽLUTÁ LIŠTA (Fixed Header) 
+      Je fixní, má z-index 100 (vždy nahoře), žluté pozadí, černý text.
+    -->
+    <nav class="fixed top-0 left-0 w-full h-[80px] bg-arch-yellow text-black z-[100] flex justify-between items-center px-6 md:px-12 shadow-md">
+        
+        <!-- Logo v liště -->
+        <a href="#" class="flex flex-col leading-none group">
+            <span class="text-3xl font-bold tracking-tighter uppercase">2020 Architekti</span>
+            <span class="text-[10px] tracking-[0.4em] uppercase font-semibold group-hover:tracking-[0.5em] transition-all">Praha</span>
+        </a>
+
+        <!-- Menu položky -->
+        <div class="hidden md:flex gap-12 text-lg font-semibold tracking-wide uppercase">
+            <a href="#" class="relative hover:opacity-60 transition-opacity after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[2px] after:bg-black hover:after:w-full after:transition-all">Ateliér</a>
+            <a href="#" class="relative hover:opacity-60 transition-opacity after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[2px] after:bg-black hover:after:w-full after:transition-all">Projekty</a>
+            <a href="#" class="relative hover:opacity-60 transition-opacity after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[2px] after:bg-black hover:after:w-full after:transition-all">Kontakt</a>
+        </div>
+
+        <!-- Mobilní menu ikona -->
+        <div class="md:hidden cursor-pointer font-bold uppercase tracking-wider">
+            Menu
+        </div>
+    </nav>
+
+
+    <!-- Scroll Indicator -->
+    <div class="fixed bottom-10 right-10 z-50 flex items-center gap-4 mix-blend-difference text-white pointer-events-none hidden md:flex">
+        <span class="text-xs tracking-[0.3em] uppercase">Scroll</span>
+        <div class="w-20 h-[1px] bg-arch-yellow"></div>
+    </div>
+
+
+    <!-- Hlavní Wrapper -->
+    <div class="horizontal-scroll-wrapper">
+        <div class="horizontal-container">
+            
+            <!-- 1. ÚVOD - SLIDESHOW -->
+            <!-- Přidáno padding-top: 0 a items-center, aby byl text uprostřed obrazovky i s lištou -->
+            <section class="panel justify-center items-center relative">
+                <div class="hero-slideshow">
+                    <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=2070&auto=format&fit=crop" class="hero-slide" alt="Slide 1">
+                    <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop" class="hero-slide" alt="Slide 2">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop" class="hero-slide" alt="Slide 3">
+                </div>
+
+                <div class="z-10 text-center px-4 mix-blend-overlay">
+                    <h1 class="text-[120px] md:text-[200px] leading-none font-bold tracking-tighter mb-2 logo-anim text-white">2020</h1>
+                    <h2 class="text-2xl md:text-4xl font-normal tracking-[0.8em] text-arch-yellow logo-subtitle-anim">ARCHITEKTI</h2>
+                </div>
+            </section>
+
+            <!-- 2. O NÁS / FILOZOFIE -->
+            <section class="panel justify-start items-center relative bg-arch-black">
+                <div class="absolute inset-0 bg-neutral-900 z-0"></div>
+                <div class="absolute right-0 top-0 h-full w-1/3 bg-neutral-800 opacity-20"></div>
+
+                <div class="z-10 w-full max-w-5xl px-8 md:pl-40 flex flex-col justify-center h-full">
+                    <div class="border-l-2 border-arch-yellow pl-10 content-anim">
+                        <h3 class="text-base uppercase tracking-[0.3em] text-gray-400 mb-6">Profil ateliéru</h3>
+                        <p class="text-3xl md:text-5xl font-light leading-tight mb-10 text-white">
+                            Architektura není o hmotě.<br>
+                            Je o prázdnu mezi ní.
+                        </p>
+                        <p class="text-gray-400 text-xl leading-relaxed max-w-2xl font-light mb-10">
+                            Hledáme podstatu. Čistíme prostor od zbytečností, abychom dali vyniknout tomu podstatnému – životu uvnitř. Naše projekty vycházejí z kontextu, respektují historii, ale mluví současným jazykem.
+                        </p>
+                        <a href="#" class="text-arch-yellow uppercase tracking-widest text-sm border-b border-arch-yellow pb-1 hover:text-white hover:border-white transition-all inline-block">Více o ateliéru</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. PROJEKT 1 -->
+            <section class="panel justify-between items-end relative group cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-110" alt="Villa Project">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                
+                <div class="absolute top-32 right-20 text-[200px] font-bold project-number opacity-10 select-none">01</div>
+
+                <div class="z-10 w-full p-12 md:p-24 flex flex-col md:flex-row items-end justify-between content-anim">
+                    <div class="max-w-xl">
+                        <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Rezidence &bull; Praha</span>
+                        <h2 class="text-6xl md:text-7xl font-bold text-white mb-6 group-hover:text-arch-yellow transition-colors">Vila Podolí</h2>
+                        <p class="text-gray-300 text-lg font-light hidden md:block">Minimalistická rekonstrukce prvorepublikové vily s důrazem na propojení se zahradou.</p>
+                    </div>
+                    <div class="mt-8 md:mt-0 mb-8 md:mb-0">
+                        <span class="w-16 h-16 rounded-full border border-white flex items-center justify-center group-hover:bg-arch-yellow group-hover:border-arch-yellow group-hover:text-black transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. PROJEKT 2 -->
+            <section class="panel justify-between items-end relative group cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-110" alt="Office Project">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                
+                <div class="absolute top-32 right-20 text-[200px] font-bold project-number opacity-10 select-none">02</div>
+
+                <div class="z-10 w-full p-12 md:p-24 flex flex-col md:flex-row items-end justify-between content-anim">
+                    <div class="max-w-xl">
+                        <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Komerční &bull; Brno</span>
+                        <h2 class="text-6xl md:text-7xl font-bold text-white mb-6 group-hover:text-arch-yellow transition-colors">Administrativa Park</h2>
+                        <p class="text-gray-300 text-lg font-light hidden md:block">Revitalizace brownfieldu na moderní administrativní komplex s parkovou úpravou.</p>
+                    </div>
+                    <div class="mt-8 md:mt-0 mb-8 md:mb-0">
+                        <span class="w-16 h-16 rounded-full border border-white flex items-center justify-center group-hover:bg-arch-yellow group-hover:border-arch-yellow group-hover:text-black transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. PROJEKT 3 -->
+            <section class="panel justify-between items-end relative group cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-110" alt="Interior Project">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                
+                <div class="absolute top-32 right-20 text-[200px] font-bold project-number opacity-10 select-none">03</div>
+
+                <div class="z-10 w-full p-12 md:p-24 flex flex-col md:flex-row items-end justify-between content-anim">
+                    <div class="max-w-xl">
+                        <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Interiér &bull; Karlín</span>
+                        <h2 class="text-6xl md:text-7xl font-bold text-white mb-6 group-hover:text-arch-yellow transition-colors">Loft Factory</h2>
+                        <p class="text-gray-300 text-lg font-light hidden md:block">Syrový beton, sklo a ocel v kontrastu s měkkým dubovým dřevem.</p>
+                    </div>
+                    <div class="mt-8 md:mt-0 mb-8 md:mb-0">
+                        <span class="w-16 h-16 rounded-full border border-white flex items-center justify-center group-hover:bg-arch-yellow group-hover:border-arch-yellow group-hover:text-black transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. KLIENTI -->
+            <section class="panel justify-center items-center bg-white text-black relative">
+                <div class="absolute left-0 top-0 h-full w-[1px] bg-gray-200"></div>
+                <div class="z-10 w-full max-w-6xl px-8">
+                    <div class="text-center mb-20 content-anim">
+                        <h3 class="text-2xl font-bold uppercase tracking-widest text-black mb-2">Spolupráce</h3>
+                        <div class="w-10 h-1 bg-arch-yellow mx-auto"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-16 items-center opacity-100">
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                        <div class="text-center font-bold text-xl text-gray-400 hover:text-black transition cursor-default">LOGO CLIENT</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. INSTAGRAM & INFO -->
+            <section class="panel justify-center items-center relative bg-neutral-900 border-r border-neutral-800">
+                <div class="z-10 flex flex-col md:flex-row w-full max-w-7xl px-8 gap-16 items-center">
+                    
+                    <div class="md:w-1/3 text-left content-anim order-2 md:order-1">
+                        <h2 class="text-4xl font-bold mb-2">@2020architekti</h2>
+                        <p class="text-arch-yellow mb-8 text-sm uppercase tracking-widest">Sledujte nás na Instagramu</p>
+                        
+                        <div class="space-y-2 text-gray-400 font-light">
+                            <p class="text-white font-bold">2020 Architekti s.r.o.</p>
+                            <p>Dlouhá 123/4, Praha 1</p>
+                            <p><a href="mailto:info@2020architekti.cz" class="hover:text-arch-yellow transition">info@2020architekti.cz</a></p>
+                            <p>+420 123 456 789</p>
+                        </div>
+                    </div>
+
+                    <div class="md:w-2/3 w-full insta-grid content-anim order-1 md:order-2">
+                        <div class="insta-item bg-gray-700" style="background-image: url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500')"></div>
+                        <div class="insta-item bg-gray-700" style="background-image: url('https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=500')"></div>
+                        <div class="insta-item bg-gray-700" style="background-image: url('https://images.unsplash.com/photo-1431576901776-e539bd916ba2?w=500')"></div>
+                        <div class="insta-item bg-gray-700" style="background-image: url('https://images.unsplash.com/photo-1488972685288-c3cc1579af1b?w=500')"></div>
+                        <div class="insta-item bg-gray-700" style="background-image: url('https://images.unsplash.com/photo-1493397212122-2b85dda7b8bd?w=500')"></div>
+                        <div class="insta-item bg-gray-700" style="background-image: url('https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=500')"></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 8. ZÁVĚREČNÉ CTA -->
+            <section class="panel justify-center items-center bg-black relative">
+                <a href="#" class="group relative z-10 text-center cursor-pointer content-anim">
+                    <div class="overflow-hidden">
+                        <h2 class="text-[60px] md:text-[100px] font-bold leading-none text-white group-hover:text-arch-yellow transition-colors duration-500 uppercase tracking-tighter">
+                            Přejdi k<br>projektům
+                        </h2>
+                    </div>
+                    <div class="mt-8 flex justify-center items-center gap-4 text-arch-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform translate-y-4 group-hover:translate-y-0">
+                        <span class="text-sm uppercase tracking-[0.4em]">Zobrazit portfolio</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                        </svg>
+                    </div>
+                </a>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const sections = gsap.utils.toArray(".panel");
+        
+        let scrollTween = gsap.to(sections, {
+            xPercent: -100 * (sections.length - 1),
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".horizontal-scroll-wrapper",
+                pin: true,
+                scrub: 1,
+                end: "+=" + (sections.length * 1000), 
+            }
+        });
+
+        const slides = document.querySelectorAll(".hero-slide");
+        let currentSlide = 0;
+
+        function nextSlide() {
+            gsap.to(slides[currentSlide], { opacity: 0, duration: 2 });
+            currentSlide = (currentSlide + 1) % slides.length;
+            gsap.to(slides[currentSlide], { opacity: 1, duration: 2 });
+        }
+        setInterval(nextSlide, 5000);
+
+
+        sections.forEach((section, i) => {
+            const contentElements = section.querySelectorAll(".content-anim");
+            const logo = section.querySelector(".logo-anim");
+            const subLogo = section.querySelector(".logo-subtitle-anim");
+
+            if(i === 0) {
+                gsap.from(logo, { y: 100, opacity: 0, duration: 1.5, ease: "power4.out" });
+                gsap.from(subLogo, { y: 20, opacity: 0, duration: 1.5, delay: 0.5, ease: "power3.out" });
+            }
+
+            if (contentElements.length > 0) {
+                gsap.from(contentElements, {
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    stagger: 0.1,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: section,
+                        containerAnimation: scrollTween,
+                        start: "left 60%", 
+                        toggleActions: "play reverse play reverse"
+                    }
+                });
+            }
+        });
+
+        window.addEventListener("load", () => {
+            ScrollTrigger.refresh();
+        });
+    </script>
+</body>
+</html>
