@@ -2,8 +2,8 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2020 Architekti - Koncept V17</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2020 Architekti - Koncept V20</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -41,50 +41,69 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
     <style>
-        body {
-            font-family: 'Antarctican', 'Barlow Condensed', sans-serif;
-            background-color: #FAF08F; 
-            color: #000000;
+        /* GLOBÁLNÍ NASTAVENÍ */
+        html {
             margin: 0;
+            padding: 0;
+            scrollbar-width: none; /* Firefox: skrýt scrollbar */
         }
-
-        /* Skrytí scrollbaru */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #FAF08F; 
+            font-family: 'Antarctican', 'Barlow Condensed', sans-serif;
+            color: #000000;
+            touch-action: pan-x; /* Povolit pouze horizontální gesta */
+            -webkit-user-select: none;
+        }
         ::-webkit-scrollbar { width: 0px; height: 0px; background: transparent; }
-        html { scrollbar-width: none; }
 
-        /* Kontejner */
-        .horizontal-container {
-            display: flex;
-            flex-wrap: nowrap;
-            height: 100vh;
-            width: fit-content;
-        }
-
-        /* --- LOGIKA SCROLLOVÁNÍ --- */
-        
-        /* MOBIL (do 1023px) */
+        /* --- STYLY PRO MOBIL (do 1023px) --- */
         @media (max-width: 1023px) {
-            body {
-                overflow-x: scroll; 
-                overflow-y: hidden; 
-                -webkit-overflow-scrolling: touch;
-                position: relative;
+            html, body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden; /* Zámek proti vertikálnímu posunu */
             }
             .horizontal-scroll-wrapper {
-                width: auto; 
+                width: 100%;
                 height: 100%;
-                overflow: visible; 
+                display: flex;
+                overflow-x: auto; /* Nativní horizontální scroll */
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+            .horizontal-container {
+                display: flex;
+                flex-wrap: nowrap;
+                height: 100%;
+                width: fit-content;
             }
         }
 
-        /* DESKTOP (od 1024px) */
+        /* --- STYLY PRO DESKTOP (od 1024px) --- */
         @media (min-width: 1024px) {
-            body {
-                overflow-x: hidden; 
-                overflow-y: auto;   
+            html, body {
+                width: 100%;
+                min-height: 100vh; /* Povolit růst stránky pro ScrollTrigger */
+                overflow-x: hidden; /* Skrýt vodorovný posuvník */
+                overflow-y: auto;   /* Povolit svislý scroll (pro kolečko) */
+            }
+            .horizontal-scroll-wrapper {
+                width: 100%;
+                height: 100vh;
+                display: flex;
+                overflow: hidden; /* Skrýt přetečení, pohyb řeší GSAP transformací */
+            }
+            .horizontal-container {
+                display: flex;
+                flex-wrap: nowrap;
+                height: 100%;
+                width: fit-content;
             }
         }
 
+        /* Panely */
         .panel {
             height: 100vh;
             flex-shrink: 0;
@@ -95,24 +114,22 @@
             box-sizing: content-box;
         }
 
-        /* Mobilní šířky */
+        /* Šířky panelů */
         .panel-fullscreen { width: 100vw; padding-right: 0; }
         .panel-content { width: 100vw; padding-right: 0; }
-        
-        /* Na mobilu 85vw šířka sekce, aby uživatel viděl kousek dalšího obsahu (motivace k potažení) */
         .panel-project { width: 85vw; padding-right: 20px; } 
 
-        /* Desktop šířky */
+        /* Desktop override šířek */
         @media (min-width: 1024px) {
             .panel-content { width: auto; padding-right: 80px; }
             .panel-project { width: auto; padding-right: 80px !important; }
         }
 
+        /* Grafika */
         .hero-slideshow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
         .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: brightness(0.6); }
         .hero-slide:first-child { opacity: 1; }
 
-        /* OPRAVA: Z-index 0 místo -1, aby byly obrázky vidět nad žlutým pozadím */
         .bg-image { 
             position: absolute; 
             top: 0; 
@@ -120,7 +137,7 @@
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
-            z-index: 0; 
+            z-index: 1; 
             filter: brightness(0.4) grayscale(10%); 
             transition: transform 1s ease-out; 
         }
@@ -154,7 +171,7 @@
         <div class="md:hidden cursor-pointer font-bold uppercase tracking-wider">Menu</div>
     </nav>
 
-    <!-- Scroll Indicator (DESKTOP) -->
+    <!-- Scroll Indicator (DESKTOP ONLY) -->
     <div class="fixed bottom-10 right-10 z-50 flex items-center gap-4 mix-blend-difference text-white pointer-events-none hidden md:flex">
         <span class="text-xs tracking-[0.3em] uppercase">Scroll</span>
         <div class="w-20 h-[1px] bg-arch-yellow"></div>
@@ -174,7 +191,7 @@
                 <div class="z-10 text-center px-4 w-full flex flex-col items-center">
                     <img src="logo1.jpg" alt="20-20-ARCHITEKTI Logo" class="main-logo logo-anim mb-8">
                     
-                    <!-- MOBILNÍ INDIKÁTOR SWIPE (Vylepšená viditelnost) -->
+                    <!-- MOBILNÍ INDIKÁTOR SWIPE -->
                     <div class="md:hidden absolute bottom-12 flex flex-col items-center animate-swipe content-anim z-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-10 h-10 drop-shadow-lg mb-2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -246,13 +263,12 @@
 
             <!-- 4. PROJEKT 1 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <!-- Wrapper: w-full na mobilu, aby vyplnil panel (85vw) -->
-                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl bg-black z-10">
                     <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Villa Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">01</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-20"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-30">01</div>
 
-                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-30 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Rezidence &bull; Praha</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Vila Podolí</h2>
@@ -269,12 +285,12 @@
 
             <!-- 5. PROJEKT 2 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl bg-black z-10">
                     <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Office Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">02</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-20"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-30">02</div>
 
-                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-30 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Komerční &bull; Brno</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Administrativa Park</h2>
@@ -291,12 +307,12 @@
 
             <!-- 6. PROJEKT 3 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl bg-black z-10">
                     <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Interior Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">03</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-20"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-30">03</div>
 
-                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-30 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Interiér &bull; Karlín</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Loft Factory</h2>
@@ -313,12 +329,12 @@
 
             <!-- 7. PROJEKT 4 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl bg-black z-10">
                     <img src="https://images.unsplash.com/photo-1506092382432-e821d33d4490?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Gallery Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">04</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-20"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-30">04</div>
 
-                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-30 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Kultura &bull; Ostrava</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Galerie Prázdnota</h2>
@@ -335,12 +351,12 @@
 
             <!-- 8. PROJEKT 5 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl bg-black z-10">
                     <img src="https://images.unsplash.com/photo-1518112390430-f4ab02e9c2c8?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Cabin Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">05</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-20"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-30">05</div>
 
-                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-30 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Rekreace &bull; Šumava</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Horská Útulna</h2>
@@ -521,8 +537,8 @@
                         ease: "power2.out",
                         scrollTrigger: {
                             trigger: section,
+                            scroller: ".horizontal-scroll-wrapper", // DŮLEŽITÉ PRO MOBILNÍ SCROLL
                             horizontal: true,
-                            // DŮLEŽITÉ: Spustit animaci dříve, jakmile se objeví na kraji obrazovky
                             start: "left 95%", 
                             toggleActions: "play reverse play reverse"
                         }
@@ -538,6 +554,7 @@
                         ease: "back.out(1.7)",
                         scrollTrigger: {
                             trigger: section,
+                            scroller: ".horizontal-scroll-wrapper",
                             horizontal: true,
                             start: "left 85%",
                             toggleActions: "play reverse play reverse"
