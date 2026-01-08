@@ -2,8 +2,9 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
+    <!-- ZÁKAZ ZOOMOVÁNÍ A ŠKÁLOVÁNÍ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2020 Architekti - Koncept V20</title>
+    <title>2020 Architekti - Koncept V21</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -45,7 +46,8 @@
         html {
             margin: 0;
             padding: 0;
-            scrollbar-width: none; /* Firefox: skrýt scrollbar */
+            scrollbar-width: none; 
+            overscroll-behavior: none; /* Zákaz pull-to-refresh a bounce efektu */
         }
         body {
             margin: 0;
@@ -53,8 +55,10 @@
             background-color: #FAF08F; 
             font-family: 'Antarctican', 'Barlow Condensed', sans-serif;
             color: #000000;
-            touch-action: pan-x; /* Povolit pouze horizontální gesta */
+            touch-action: pan-x; /* Povolit pouze horizontální gesta, prohlížeč ignoruje vertikální */
             -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         ::-webkit-scrollbar { width: 0px; height: 0px; background: transparent; }
 
@@ -62,8 +66,10 @@
         @media (max-width: 1023px) {
             html, body {
                 width: 100%;
-                height: 100%;
-                overflow: hidden; /* Zámek proti vertikálnímu posunu */
+                height: 100%; /* Fallback */
+                height: 100dvh; /* Dynamická výška viewportu (řeší adresní řádek) */
+                overflow: hidden; /* Tvrdý zámek proti vertikálnímu posunu */
+                position: fixed; /* Zabraňuje scrollování celého body na iOS */
             }
             .horizontal-scroll-wrapper {
                 width: 100%;
@@ -72,6 +78,7 @@
                 overflow-x: auto; /* Nativní horizontální scroll */
                 overflow-y: hidden;
                 -webkit-overflow-scrolling: touch;
+                overscroll-behavior-x: contain; /* Zabrání přenosu gesta zpět na prohlížeč */
             }
             .horizontal-container {
                 display: flex;
@@ -85,15 +92,16 @@
         @media (min-width: 1024px) {
             html, body {
                 width: 100%;
-                min-height: 100vh; /* Povolit růst stránky pro ScrollTrigger */
-                overflow-x: hidden; /* Skrýt vodorovný posuvník */
-                overflow-y: auto;   /* Povolit svislý scroll (pro kolečko) */
+                min-height: 100vh; 
+                overflow-x: hidden; 
+                overflow-y: auto;   
+                position: relative; /* Reset fixed z mobilu */
             }
             .horizontal-scroll-wrapper {
                 width: 100%;
                 height: 100vh;
                 display: flex;
-                overflow: hidden; /* Skrýt přetečení, pohyb řeší GSAP transformací */
+                overflow: hidden; 
             }
             .horizontal-container {
                 display: flex;
@@ -103,9 +111,9 @@
             }
         }
 
-        /* Panely */
+        /* Panely - použití 100% výšky kontejneru místo vh */
         .panel {
-            height: 100vh;
+            height: 100%; 
             flex-shrink: 0;
             display: flex;
             position: relative;
@@ -441,6 +449,37 @@
     </div>
 
     <script>
+        // --- JAVASCRIPT OCHRANA PROTI ZOOMU A VERTIKÁLNÍMU POSUNU NA MOBILU ---
+        
+        // 1. Zákaz pinch-zoom (gesto dvěma prsty)
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) { 
+                event.preventDefault(); 
+            }
+        }, { passive: false });
+
+        // 2. Zákaz double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // 3. Pokročilá prevence vertikálního scrollu pro iOS (když fixed position nestačí)
+        // Toto povolí jen horizontální tah v našem wrapperu
+        const scrollContainer = document.querySelector('.horizontal-scroll-wrapper');
+        
+        document.body.addEventListener('touchmove', function(e) {
+            // Pokud se dotyk děje mimo náš scrollovací kontejner, zakázat
+            if (!scrollContainer.contains(e.target)) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+
         gsap.registerPlugin(ScrollTrigger);
 
         const slides = document.querySelectorAll(".hero-slide");
