@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2020 Architekti - Koncept V16</title>
+    <title>2020 Architekti - Koncept V17</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,12 +21,12 @@
                     },
                     keyframes: {
                         swipe: {
-                            '0%, 100%': { transform: 'translateX(0)', opacity: '0.5' },
-                            '50%': { transform: 'translateX(20px)', opacity: '1' },
+                            '0%, 100%': { transform: 'translateX(0)', opacity: '0.6' },
+                            '50%': { transform: 'translateX(15px)', opacity: '1' },
                         }
                     },
                     animation: {
-                        swipe: 'swipe 2s infinite',
+                        swipe: 'swipe 1.5s ease-in-out infinite',
                     }
                 }
             }
@@ -65,12 +65,11 @@
         /* MOBIL (do 1023px) */
         @media (max-width: 1023px) {
             body {
-                overflow-x: scroll; /* Vynutit nativní scroll */
+                overflow-x: scroll; 
                 overflow-y: hidden; 
                 -webkit-overflow-scrolling: touch;
                 position: relative;
             }
-            /* Důležité: Wrapper nesmí mít overflow, aby body převzalo scroll */
             .horizontal-scroll-wrapper {
                 width: auto; 
                 height: 100%;
@@ -99,7 +98,9 @@
         /* Mobilní šířky */
         .panel-fullscreen { width: 100vw; padding-right: 0; }
         .panel-content { width: 100vw; padding-right: 0; }
-        .panel-project { width: 85vw; padding-right: 15px; } /* Menší než 100vw aby bylo vidět kousek dalšího */
+        
+        /* Na mobilu 85vw šířka sekce, aby uživatel viděl kousek dalšího obsahu (motivace k potažení) */
+        .panel-project { width: 85vw; padding-right: 20px; } 
 
         /* Desktop šířky */
         @media (min-width: 1024px) {
@@ -111,7 +112,18 @@
         .hero-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: brightness(0.6); }
         .hero-slide:first-child { opacity: 1; }
 
-        .bg-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.4) grayscale(10%); transition: transform 1s ease-out; }
+        /* OPRAVA: Z-index 0 místo -1, aby byly obrázky vidět nad žlutým pozadím */
+        .bg-image { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            z-index: 0; 
+            filter: brightness(0.4) grayscale(10%); 
+            transition: transform 1s ease-out; 
+        }
         .group:hover .bg-image { transform: scale(1.03); filter: brightness(0.5) grayscale(0%); }
 
         .timeline-line { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background-color: #000; z-index: 0; }
@@ -162,12 +174,12 @@
                 <div class="z-10 text-center px-4 w-full flex flex-col items-center">
                     <img src="logo1.jpg" alt="20-20-ARCHITEKTI Logo" class="main-logo logo-anim mb-8">
                     
-                    <!-- MOBILNÍ INDIKÁTOR SWIPE -->
-                    <div class="md:hidden mt-12 flex flex-col items-center opacity-80 animate-swipe content-anim">
-                        <span class="text-white text-xs uppercase tracking-[0.3em] mb-2 font-bold shadow-black drop-shadow-md">Posunout</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" class="w-8 h-8 drop-shadow-md">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                    <!-- MOBILNÍ INDIKÁTOR SWIPE (Vylepšená viditelnost) -->
+                    <div class="md:hidden absolute bottom-12 flex flex-col items-center animate-swipe content-anim z-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-10 h-10 drop-shadow-lg mb-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                         </svg>
+                        <span class="text-white text-xs uppercase tracking-[0.4em] font-bold drop-shadow-lg">Posunout</span>
                     </div>
                 </div>
             </section>
@@ -234,12 +246,13 @@
 
             <!-- 4. PROJEKT 1 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-[90vw] md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <!-- Wrapper: w-full na mobilu, aby vyplnil panel (85vw) -->
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
                     <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Villa Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none">01</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">01</div>
 
-                    <div class="z-10 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Rezidence &bull; Praha</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Vila Podolí</h2>
@@ -256,12 +269,12 @@
 
             <!-- 5. PROJEKT 2 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-[90vw] md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
                     <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Office Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none">02</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">02</div>
 
-                    <div class="z-10 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Komerční &bull; Brno</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Administrativa Park</h2>
@@ -278,12 +291,12 @@
 
             <!-- 6. PROJEKT 3 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-[90vw] md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
                     <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Interior Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none">03</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">03</div>
 
-                    <div class="z-10 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Interiér &bull; Karlín</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Loft Factory</h2>
@@ -300,12 +313,12 @@
 
             <!-- 7. PROJEKT 4 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-[90vw] md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
                     <img src="https://images.unsplash.com/photo-1506092382432-e821d33d4490?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Gallery Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none">04</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">04</div>
 
-                    <div class="z-10 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Kultura &bull; Ostrava</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Galerie Prázdnota</h2>
@@ -322,12 +335,12 @@
 
             <!-- 8. PROJEKT 5 -->
             <section class="panel panel-project justify-center items-end bg-arch-yellow">
-                <div class="relative w-[90vw] md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
+                <div class="relative w-full md:w-[40vw] h-[75vh] md:h-[85vh] overflow-hidden group cursor-pointer shadow-2xl">
                     <img src="https://images.unsplash.com/photo-1518112390430-f4ab02e9c2c8?q=80&w=2000&auto=format&fit=crop" class="bg-image transition-transform duration-1000 group-hover:scale-105" alt="Cabin Project">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none">05</div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
+                    <div class="absolute top-10 right-10 text-[80px] md:text-[100px] font-bold project-number opacity-20 select-none z-20">05</div>
 
-                    <div class="z-10 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
+                    <div class="z-20 absolute bottom-0 left-0 w-full p-8 md:p-12 pb-16 md:pb-24 flex flex-col items-start justify-end content-anim">
                         <div class="w-full">
                             <span class="text-arch-yellow uppercase tracking-widest text-sm mb-2 block">Rekreace &bull; Šumava</span>
                             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 group-hover:text-arch-yellow transition-colors leading-tight">Horská Útulna</h2>
